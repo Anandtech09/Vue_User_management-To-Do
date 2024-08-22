@@ -13,8 +13,7 @@
           <input class="form-control" type="tel" v-model="phoneNo" placeholder="Phone No" pattern="[0-9]{10}" required />
         </div>
         <div class="form-group">
-          <input class="form-control" type="file" @change="handleFileChange"
-          />
+          <input class="form-control" type="file" @change="handleFileChange"/>
         </div>
         <button class="btn btn-main" type="submit" :disabled="loading">
           Add Details
@@ -89,16 +88,7 @@
         }
       };
   
-      return {
-        name,
-        address,
-        phoneNo,
-        photo,
-        handleFileChange,
-        handleAddDetails,
-        loading,
-        error,
-      };
+      return { name, address, phoneNo, photo, handleFileChange, handleAddDetails, loading, error };
     },
   };
   </script>
