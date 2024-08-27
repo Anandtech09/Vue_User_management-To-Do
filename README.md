@@ -54,3 +54,20 @@ This project is a Todo application built using Vue.js and Firebase. It includes 
 ```bash
   npm run build
 ```
+### 7. New Features Added
+
+- Hosting
+The To-Do app is deployed using Firebase Hosting, making it accessible via a public URL. You can view the app at:
+[https://to-do-vue-4dc57.web.app]
+
+- Cloud Functions
+A basic Firebase Cloud Function is implemented to trigger on specific events, such as the creation of a new To-Do item. This function logs actions and can perform other simple tasks. The function helps in automating backend processes and integrating server-side logic.
+
+- Extensions
+The project includes a Firebase Extension for image resizing. This extension demonstrates the capability of extending app functionality with minimal code. The extension automatically resizes images uploaded to Firebase Storage, ensuring they meet size requirements and optimize performance.
+
+- Analytics
+Firebase Analytics is integrated into the app to track key user interactions. Metrics such as login frequency, the number of To-Do items created, and feature usage statistics are collected and analyzed. This helps in understanding user behavior and improving the app’s features.
+
+- Realtime Database
+The Firebase Realtime Database is utilized to store a subset of data, such as user activity logs. This showcases the difference between Realtime Database and Firestore. Realtime Database provides a scalable solution for storing and syncing data in real-time.

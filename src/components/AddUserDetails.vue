@@ -80,6 +80,7 @@ export default {
 
       try {
         await createUserProfile(profileData);
+        sessionStorage.setItem('displayName', profileData.name);
         router.push('/profile');
       } catch (createError) {
         error.value = 'Error adding user details.';
@@ -159,6 +160,7 @@ export default {
   .btn-main:hover {
     border: 1px solid #FF8225;
     color: #FF8225;
+    background-color: white;;
     font-weight: bolder;
   }
 

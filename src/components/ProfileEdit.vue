@@ -146,6 +146,7 @@ export default {
   .btn-main:hover {
     border: 1px solid #FF8225;
     color: #FF8225;
+    background-color: white;
     font-weight: bolder;
   }
 
