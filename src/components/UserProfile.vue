@@ -28,21 +28,23 @@
     },
     setup() {
       const profile = ref(null);
+      const displayName = ref(sessionStorage.getItem('displayName') || '');
       const router = useRouter();
       const route = useRoute();
 
       const loadProfile = async () => {
-        try {
-          const userProfile = await getUserProfile();
-          if (userProfile) {
-            profile.value = userProfile;
-          } else {
-            router.push('/add-user-details');
-          }
-        } catch (error) {
-          console.error('Error loading profile:', error);
+      try {
+        const userProfile = await getUserProfile();
+        if (userProfile) {
+          profile.value = userProfile;
+          sessionStorage.setItem('displayName', userProfile.name || displayName.value);
+        } else {
+          router.push('/add-user-details');
         }
-      };
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
 
       const editProfile = () => {
         router.push('/edit-profile');
