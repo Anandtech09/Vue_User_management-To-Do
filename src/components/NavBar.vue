@@ -26,23 +26,24 @@ export default {
     const displayName = ref(sessionStorage.getItem('displayName') || '');
 
     const fetchUserProfile = async () => {
-      if (!displayName.value) {
-        const user = auth.currentUser;
-        if (user) {
-          try {
-            const profile = await getUserProfile();
-            displayName.value = profile?.name || user.email;
-            sessionStorage.setItem('displayName', displayName.value);
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-            displayName.value = user.email;
-            sessionStorage.setItem('displayName', displayName.value);
-          }
-        } else {
-          displayName.value = 'Guest';
-        }
+  if (!displayName.value) {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const profile = await getUserProfile();
+        displayName.value = profile?.name ? profile.name : user.email;
+        sessionStorage.setItem('displayName', displayName.value);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        displayName.value = user.email;
+        sessionStorage.setItem('displayName', displayName.value);
       }
-    };
+    } else {
+      displayName.value = 'Guest';
+    }
+  }
+};
+
 
     onMounted(() => {
       fetchUserProfile();

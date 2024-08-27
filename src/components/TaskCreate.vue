@@ -118,6 +118,7 @@ export default {
     border: 1px solid #FF8225;
     color: #FF8225;
     font-weight: bolder;
+    background-color: white;
   }
 
   .spinner {

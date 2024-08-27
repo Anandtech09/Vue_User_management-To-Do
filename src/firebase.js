@@ -1,7 +1,9 @@
 import { getAuth } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
+import { getAnalytics, logEvent } from "firebase/analytics";
 import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, deleteDoc, query, where, getDocs, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getDatabase, ref as dbRef, set } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
@@ -16,8 +18,33 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
 const storage = getStorage(app);
+const analytics = getAnalytics(app);
+const realtimeDb = getDatabase(app);
+
+// databases in todo
 const taskCollection = collection(db, 'tasks');
-const userCollection = collection(db, 'users'); 
+const userCollection = collection(db, 'users');
+
+// For user activity recording -- @Anand
+export const logUserActivity = async (activity) => {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('No user is logged in.');
+  }
+
+  const activityRef = dbRef(realtimeDb, `activityLogs/${user.uid}/${Date.now()}`);
+
+  try {
+    await set(activityRef, {
+      activity,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('Error logging user activity:', error);
+    throw error;
+  }
+};
 
 // For Task Management -- @Anand
 export const useLoadTasks = async () => {
@@ -33,15 +60,19 @@ export const useLoadTasks = async () => {
     const q = query(taskCollection, where('userId', '==', user.uid));
     const snapshot = await getDocs(q);
     snapshot.forEach((doc) => {
-      tasks.push({ id: doc.id, ...doc.data() });
+      const taskData = { id: doc.id, ...doc.data() };
+      if (!tasks.some(task => task.id === taskData.id)) {
+        tasks.push(taskData);
+      }
     });
   } catch (error) {
-    console.error('Error fetching tasks:', error);
+    console.error('Error fetching tasks:', error.message, error.stack);
     throw error;
   }
 
   return tasks;
 };
+
 
 export const getTask = async (id) => {
   const docRef = doc(taskCollection, id);
@@ -68,12 +99,20 @@ export const createTask = async (task) => {
   }
 
   try {
-    return await addDoc(taskCollection, { ...task, userId: user.uid });
+    const docRef = await addDoc(taskCollection, { ...task, userId: user.uid });
+
+    // Log the event with Analytics
+    logEvent(analytics, 'todo_created', { todoId: docRef.id });
+    await logUserActivity('Created a new task: ' + docRef.id);
+
+    return docRef;
   } catch (error) {
-    console.error('Error creating task:', error);
+    console.error('Error creating task:', error.message, error.stack);
     throw error;
   }
 };
+
+
 
 export const updateTask = async (id, data) => {
   try {
@@ -120,7 +159,7 @@ export const getUserProfile = async () => {
     return docSnap.exists() ? docSnap.data() : null;
   } catch (error) {
     console.error('Error fetching user profile:', error);
-    throw error;
+    throw new Error('Failed to fetch user profile.');
   }
 };
 
@@ -135,30 +174,27 @@ export const updateUserProfile = async (profileData) => {
     await setDoc(docRef, profileData, { merge: true });
   } catch (error) {
     console.error('Error updating user profile:', error);
-    throw error;
+    throw new Error('Failed to update user profile.');
   }
 };
-
 
 export const uploadProfilePhoto = async (file) => {
   const user = auth.currentUser;
   if (!user) {
     throw new Error('No user is logged in.');
   }
-
-  const photoRef = storageRef(storage, `profile_photos/${user.uid}/${file.name}`);
+  
+  const fileName = `${Date.now()}_${file.name}`;
+  const photoRef = storageRef(storage, `profile_photos/${user.uid}/${fileName}`);
   try {
     const snapshot = await uploadBytes(photoRef, file);
     const url = await getDownloadURL(snapshot.ref);
     return url;
   } catch (error) {
     console.error('Error uploading profile photo:', error);
-    throw new Error(`Upload failed: ${error.message}`);
+    throw new Error('Failed to upload profile photo.');
   }
 };
-
-
-
 
 export const createUserProfile = async (profileData) => {
   const user = auth.currentUser;
@@ -171,6 +207,6 @@ export const createUserProfile = async (profileData) => {
     await setDoc(docRef, profileData, { merge: true });
   } catch (error) {
     console.error('Error creating user profile:', error);
-    throw error;
+    throw new Error('Failed to create user profile.');
   }
 };

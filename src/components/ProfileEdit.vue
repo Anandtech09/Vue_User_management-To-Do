@@ -1,94 +1,94 @@
 <template>
-    <NavBar />
-    <div class="card card-body">
-      <h1>Edit Profile</h1>
-      <form @submit.prevent="onSubmit">
-        <div class="form-group">
-          <input class="form-control" type="text" v-model="name" placeholder="Enter Name" required />
-        </div>
-        <div class="form-group">
-          <input class="form-control" type="text" v-model="address" placeholder="Enter Address" required />
-        </div>
-        <div class="form-group">
-          <input class="form-control" type="tel" v-model="phoneNo" placeholder="Phone No" pattern="[0-9]{10}" required />
-        </div>
-        <div class="form-group">
-          <input class="form-control" type="file" @change="onFileChange" />
-        </div>
-        <button class="btn btn-main" type="submit" :disabled="loading">Save</button>
-        <div v-if="loading" class="spinner"></div>
-        <div v-if="error" class="error">{{ error }}</div>
-      </form>
-    </div>
-  </template>
-  
-  <script>
-  import { ref, onMounted } from 'vue';
-  import { getAuth } from 'firebase/auth';
-  import { updateUserProfile, uploadProfilePhoto, getUserProfile } from '@/firebase';
-  import { useRouter } from 'vue-router';
-  import NavBar from './NavBar.vue';
-  
-  export default {
-    components: {
-        NavBar,
-    },
-    setup() {
-      const name = ref('');
-      const address = ref('');
-      const phoneNo = ref('');
-      const loading = ref(false);
-      const error = ref('');
-      const auth = getAuth();
-      const router = useRouter();
-  
-      onMounted(async () => {
+  <NavBar />
+  <div class="card card-body">
+    <h1>Edit Profile</h1>
+    <form @submit.prevent="onSubmit">
+      <div class="form-group">
+        <input class="form-control" type="text" v-model="name" placeholder="Enter Name" required />
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="text" v-model="address" placeholder="Enter Address" required />
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="tel" v-model="phoneNo" placeholder="Phone No" pattern="[0-9]{10}" required />
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="file" @change="onFileChange" />
+      </div>
+      <button class="btn btn-main" type="submit" :disabled="loading">Save</button>
+      <div v-if="loading" class="spinner"></div>
+      <div v-if="error" class="error">{{ error }}</div>
+    </form>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted } from 'vue';
+import { getAuth } from 'firebase/auth';
+import { updateUserProfile, uploadProfilePhoto, getUserProfile } from '@/firebase';
+import { useRouter } from 'vue-router';
+import NavBar from './NavBar.vue';
+
+export default {
+  components: {
+    NavBar,
+  },
+  setup() {
+    const name = ref('');
+    const address = ref('');
+    const phoneNo = ref('');
+    const loading = ref(false);
+    const error = ref('');
+    const auth = getAuth();
+    const router = useRouter();
+
+    onMounted(async () => {
+      try {
+        const profile = await getUserProfile(auth.currentUser.uid);
+        name.value = profile.name || '';
+        address.value = profile.address || '';
+        phoneNo.value = profile.phoneNo || '';
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        error.value = 'Error fetching profile data.';
+      }
+    });
+
+    const onSubmit = async () => {
+      loading.value = true;
+      try {
+        await updateUserProfile({
+          name: name.value,
+          address: address.value,
+          phoneNo: phoneNo.value
+        });
+
+        router.push('/profile');
+      } catch (error) {
+        error.value = 'Error updating profile';
+        console.error('Error:', error);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const onFileChange = async (event) => {
+      const file = event.target.files[0];
+      if (file) {
         try {
-          const profile = await getUserProfile(auth.currentUser.uid);
-          name.value = profile.name || '';
-          address.value = profile.address || '';
-          phoneNo.value = profile.phoneNo || '';
+          const photoURL = await uploadProfilePhoto(file);
+          await updateUserProfile({ photoURL });
         } catch (error) {
-          console.error('Error fetching profile:', error);
-          error.value = 'Error fetching profile data.';
-        }
-      });
-  
-      const onSubmit = async () => {
-        loading.value = true;
-        try {
-          await updateUserProfile({
-            name: name.value,
-            address: address.value,
-            phoneNo: phoneNo.value
-          });
-          
-          router.push('/profile');
-        } catch (error) {
-          error.value = 'Error updating profile';
+          error.value = 'Error uploading photo';
           console.error('Error:', error);
-        } finally {
-          loading.value = false;
         }
-      };
-  
-      const onFileChange = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          try {
-            const photoURL = await uploadProfilePhoto(file);
-            await updateUserProfile({ photoURL });
-          } catch (error) {
-            error.value = 'Error uploading photo';
-            console.error('Error:', error);
-          }
-        }
-      };
-  
-      return { name, address, phoneNo, onSubmit, loading, error, onFileChange };
-    }
-  };
-  </script>
+      }
+    };
+
+    return { name, address, phoneNo, onSubmit, loading, error, onFileChange };
+  },
+};
+</script>
  
  <style scoped>
 

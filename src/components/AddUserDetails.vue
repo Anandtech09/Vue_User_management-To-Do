@@ -1,109 +1,108 @@
 <template>
-    <NavBar />
-    <div class="card card-body">
-      <h1>Add User Details</h1>
-      <form @submit.prevent="handleAddDetails">
-        <div class="form-group">
-          <input class="form-control" v-model="name" placeholder="Enter Your Name" required />
-        </div>
-        <div class="form-group">
-          <input class="form-control" v-model="address" placeholder="Address Please" required />
-        </div>
-        <div class="form-group">
-          <input class="form-control" type="tel" v-model="phoneNo" placeholder="Phone No" pattern="[0-9]{10}" required />
-        </div>
-        <div class="form-group">
-          <input class="form-control" type="file" @change="handleFileChange"
-          />
-        </div>
-        <button class="btn btn-main" type="submit" :disabled="loading">
-          Add Details
-        </button>
-        <div v-if="loading" class="spinner"></div>
-        <div v-if="error" class="error">{{ error }}</div>
-      </form>
-    </div>
-  </template>
-  
-  <script>
-  import { ref } from 'vue';
-  import { getAuth } from 'firebase/auth';
-  import { createUserProfile, uploadProfilePhoto } from '@/firebase';
-  import { useRouter } from 'vue-router';
-  import NavBar from './NavBar.vue';
-  
-  export default {
-    components: {
-        NavBar,
-    },
-    setup() {
-      const name = ref('');
-      const address = ref('');
-      const phoneNo = ref('');
-      const photo = ref(null);
-      const loading = ref(false);
-      const error = ref('');
-      const router = useRouter();
-      const auth = getAuth();
-  
-      const handleFileChange = (event) => {
-        photo.value = event.target.files[0];
+  <NavBar />
+  <div class="card card-body">
+    <h1>Add User Details</h1>
+    <form @submit.prevent="handleAddDetails">
+      <div class="form-group">
+        <input class="form-control" v-model="name" placeholder="Enter Your Name" required />
+      </div>
+      <div class="form-group">
+        <input class="form-control" v-model="address" placeholder="Address Please" required />
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="tel" v-model="phoneNo" placeholder="Phone No" pattern="[0-9]{10}" required />
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="file" @change="handleFileChange" />
+      </div>
+      <button class="btn btn-main" type="submit" :disabled="loading">
+        Add Details
+      </button>
+      <div v-if="loading" class="spinner"></div>
+      <div v-if="error" class="error">{{ error }}</div>
+    </form>
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue';
+import { getAuth } from 'firebase/auth';
+import { createUserProfile, uploadProfilePhoto } from '@/firebase';
+import { useRouter } from 'vue-router';
+import NavBar from './NavBar.vue';
+
+export default {
+  components: {
+      NavBar,
+  },
+  setup() {
+    const name = ref('');
+    const address = ref('');
+    const phoneNo = ref('');
+    const photo = ref(null);
+    const loading = ref(false);
+    const error = ref('');
+    const router = useRouter();
+    const auth = getAuth();
+
+    const handleFileChange = (event) => {
+      photo.value = event.target.files[0];
+    };
+
+    const handleAddDetails = async () => {
+      loading.value = true;
+      const user = auth.currentUser;
+
+      if (!user) {
+        error.value = 'No user is logged in.';
+        loading.value = false;
+        return;
+      }
+
+      const profileData = {
+        name: name.value,
+        address: address.value,
+        phoneNo: phoneNo.value,
+        photoURL: '',
       };
-  
-      const handleAddDetails = async () => {
-        loading.value = true;
-        const user = auth.currentUser;
-  
-        if (!user) {
-          error.value = 'No user is logged in.';
+
+      if (photo.value) {
+        try {
+          profileData.photoURL = await uploadProfilePhoto(photo.value);
+        } catch (uploadError) {
+          error.value = 'Error uploading photo.';
+          console.error('Upload Error:', uploadError);
           loading.value = false;
           return;
         }
-  
-        const profileData = {
-          name: name.value,
-          address: address.value,
-          phoneNo: phoneNo.value,
-          photoURL: '',
-        };
-  
-        if (photo.value) {
-          try {
-            profileData.photoURL = await uploadProfilePhoto(photo.value);
-          } catch (uploadError) {
-            error.value = 'Error uploading photo.';
-            console.error('Upload Error:', uploadError);
-            loading.value = false;
-            return;
-          }
-        }
-  
-        try {
-          await createUserProfile(profileData);
-          router.push('/profile');
-        } catch (createError) {
-          error.value = 'Error adding user details.';
-          console.error('Create Error:', createError);
-        } finally {
-          loading.value = false;
-        }
-      };
-  
-      return {
-        name,
-        address,
-        phoneNo,
-        photo,
-        handleFileChange,
-        handleAddDetails,
-        loading,
-        error,
-      };
-    },
-  };
-  </script>
-  
-  <style scoped>
+      }
+
+      try {
+        await createUserProfile(profileData);
+        router.push('/profile');
+      } catch (createError) {
+        error.value = 'Error adding user details.';
+        console.error('Create Error:', createError);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    return {
+      name,
+      address,
+      phoneNo,
+      photo,
+      handleFileChange,
+      handleAddDetails,
+      loading,
+      error,
+    };
+  },
+};
+</script>
+
+<style scoped>
 
   h1 {
       text-align: center;
