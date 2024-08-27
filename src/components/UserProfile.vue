@@ -29,6 +29,7 @@
     setup() {
       const profile = ref(null);
       const displayName = ref(sessionStorage.getItem('displayName') || '');
+      const profileImage = ref(sessionStorage.getItem('profileImage') || null);
       const router = useRouter();
       const route = useRoute();
 
@@ -36,8 +37,10 @@
       try {
         const userProfile = await getUserProfile();
         if (userProfile) {
-          profile.value = userProfile;
           sessionStorage.setItem('displayName', userProfile.name || displayName.value);
+          sessionStorage.setItem('profileImage', userProfile.photoURL || profileImage.value);
+          profile.value = userProfile;
+          router.replace({ query: { refreshed: true } });
         } else {
           router.push('/add-user-details');
         }

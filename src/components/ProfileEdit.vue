@@ -62,7 +62,7 @@ export default {
           address: address.value,
           phoneNo: phoneNo.value
         });
-
+        
         router.push('/profile');
       } catch (error) {
         error.value = 'Error updating profile';

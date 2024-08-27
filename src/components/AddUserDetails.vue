@@ -81,6 +81,7 @@ export default {
       try {
         await createUserProfile(profileData);
         sessionStorage.setItem('displayName', profileData.name);
+        sessionStorage.setItem('profileImage', profileData.photoURL);
         router.push('/profile');
       } catch (createError) {
         error.value = 'Error adding user details.';
