@@ -64,7 +64,7 @@ The To-Do app is deployed using Firebase Hosting, making it accessible via a pub
 A basic Firebase Cloud Function is implemented to trigger on specific events, such as the creation of a new To-Do item. This function logs actions and can perform other simple tasks. The function helps in automating backend processes and integrating server-side logic.
 
 - Extensions
-The project includes a Firebase Extension for image resizing. This extension demonstrates the capability of extending app functionality with minimal code. The extension automatically resizes images uploaded to Firebase Storage, ensuring they meet size requirements and optimize performance.
+The project includes a Firebase Extension for image resizing. This extension demonstrates the capability of extending app functionality with minimal code. The extension automatically resizes images uploaded to Firebase Storage, ensuring they meet size requirements and optimize performance.[ you can upload image of type: jpeg ,webp ,png ,gif ]
 
 - Analytics
 Firebase Analytics is integrated into the app to track key user interactions. Metrics such as login frequency, the number of To-Do items created, and feature usage statistics are collected and analyzed. This helps in understanding user behavior and improving the app’s features.
