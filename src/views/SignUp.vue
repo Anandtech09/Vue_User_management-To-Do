@@ -94,6 +94,7 @@
       .btn-main:hover {
         border: 1px solid #FF4E88;
         color: #FF4E88;
+        background-color: white;
         font-weight: bolder;
       }
       
